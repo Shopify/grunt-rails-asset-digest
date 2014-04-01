@@ -28,10 +28,12 @@ module.exports = (grunt) ->
     obj
 
   grunt.registerMultiTask "rails_asset_digest", "Generates asset fingerprints and appends to a rails manifest", ->
+    algorithm = @options(algorithm: "md5").algorithm
+    assetPath = @options(assetPath: "public/assets/").assetPath
 
-    assetPath      = @options(assetPath: "public/assets/").assetPath
-    algorithm      = @options(algorithm: "md5").algorithm
-    manifestName   = @options(manifestName: "manifest.json").manifestName
+    manifests = grunt.file.expand("#{assetPath}/manifest-*.json").concat(grunt.file.expand("#{assetPath}/manifest.json"))
+    lastManifest = _.sortBy(manifests, (f) -> -fs.statSync(f).mtime).map(path.basename)[0] || 'manifest.json'
+    manifestName = @options(manifestName: lastManifest).manifestName
 
     assetPathRegex = ///^#{normalizeAssetPath(assetPath)}///
     manifestPath   = "#{normalizeAssetPath(assetPath)}#{manifestName}"
